@@ -256,7 +256,7 @@ function GlassQuote({ quote, author, delay = 0 }) {
 }
 
 /* ── main component ─────────────────────────────── */
-export default function HeroSection() {
+export default function HeroSection({ onAssetsReady }) {
   const containerRef = useRef(null);
   const canvasRef    = useRef(null);
   const imagesRef    = useRef([]);
@@ -316,6 +316,12 @@ export default function HeroSection() {
     }
     imagesRef.current = imgs;
   }, [drawImg]);
+
+  useEffect(() => {
+    if (canvasReady && typeof onAssetsReady === 'function') {
+      onAssetsReady();
+    }
+  }, [canvasReady, onAssetsReady]);
 
   // ── scroll handler ────────────────────────────
   useEffect(() => {

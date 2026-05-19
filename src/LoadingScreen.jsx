@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 // Embedded CSS for Cyberpunk Loading Aesthetics
 const LOADING_STYLES = `
@@ -97,38 +97,47 @@ const LOADING_STYLES = `
   @keyframes glitch { 0%, 100% { transform: translate(0); } 20% { transform: translate(-2px, 1px); } 40% { transform: translate(2px, -1px); } 60% { transform: translate(-1px, -2px); } 80% { transform: translate(1px, 2px); } }
 `;
 
-export default function LoadingScreen({ onDone }) {
+export default function LoadingScreen({ assetsReady, onDone }) {
   const [progress, setProgress] = useState(0);
   const [fadeOut, setFadeOut]   = useState(false);
+  const [timerReady, setTimerReady] = useState(false);
+  const completeRef = useRef(false);
 
   useEffect(() => {
     // Progress bar fills over ~4.8s
     const interval = setInterval(() => {
       setProgress(p => {
         if (p >= 100) { clearInterval(interval); return 100; }
-        // Eased fill: faster at start, slower near end
         const step = p < 60 ? 2.2 : p < 85 ? 1.1 : 0.55;
         return Math.min(p + step, 100);
       });
     }, 50);
 
-    // Fade out at 5s
-    const fadeTimer = setTimeout(() => setFadeOut(true), 4800);
-    const doneTimer = setTimeout(onDone, 5300);
+    // Mark timer completion after the minimum loading duration.
+    const readyTimer = setTimeout(() => setTimerReady(true), 5300);
 
     return () => {
       clearInterval(interval);
-      clearTimeout(fadeTimer);
-      clearTimeout(doneTimer);
+      clearTimeout(readyTimer);
     };
-  }, [onDone]);
+  }, []);
+
+  useEffect(() => {
+    if (!timerReady || !assetsReady || completeRef.current) return;
+    completeRef.current = true;
+
+    setFadeOut(true);
+    const doneTimer = setTimeout(onDone, 500);
+    return () => clearTimeout(doneTimer);
+  }, [assetsReady, onDone, timerReady]);
 
   // Dynamic status text based on load progress
   let statusText = '[ INITIATING BOOT SEQUENCE ]';
   if (progress > 25) statusText = '[ DECRYPTING DATABANKS ]';
   if (progress > 55) statusText = '[ COMPILING UI ASSETS ]';
   if (progress > 85) statusText = '[ ESTABLISHING UPLINK ]';
-  if (progress === 100) statusText = '[ SYSTEM ONLINE ]';
+  if (progress === 100 && assetsReady) statusText = '[ SYSTEM ONLINE ]';
+  if (progress === 100 && !assetsReady) statusText = '[ AWAITING ASSET DECRYPTION ]';
 
   return (
     <>

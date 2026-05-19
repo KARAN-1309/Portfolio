@@ -14,14 +14,20 @@ import './App.css';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
+  const [assetsReady, setAssetsReady] = useState(false);
 
   return (
     <>
       {/* Global noise texture overlay for depth (defined in App.css) */}
       <div className="noise-overlay" />
 
-      {/* Loading Screen overlays everything until the timer completes */}
-      {isLoading && <LoadingScreen onDone={() => setIsLoading(false)} />}
+      {/* Loading Screen overlays everything until both the timer and asset preload complete */}
+      {isLoading && (
+        <LoadingScreen
+          assetsReady={assetsReady}
+          onDone={() => setIsLoading(false)}
+        />
+      )}
 
       {/* Main Application Wrapper (Forced Dark/Cyberpunk Theme) */}
       <div>
@@ -30,7 +36,7 @@ export default function App() {
         <Navbar />
 
         <main>
-          <HeroSection />
+          <HeroSection onAssetsReady={() => setAssetsReady(true)} />
           
           <div className="section-divider" />
           
