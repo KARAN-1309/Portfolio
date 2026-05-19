@@ -329,7 +329,7 @@ export default function ChatbotWidget() {
     setIsTyping(true);
 
     try {
-      const response = await fetch('http://localhost:5005/api/chat', {
+      const response = await fetch('https://myportfolio-m5rr.onrender.com/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ history: messages, message: userText }),
